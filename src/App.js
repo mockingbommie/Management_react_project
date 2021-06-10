@@ -1,18 +1,5 @@
-import React,{Component} from 'react'
-import './App.less'
-import {Route,Switch} from 'react-router-dom'
-import Login from './pages/login/login'
-import Admin from './pages/admin/admin'
+import React from 'react'
+import ReactDom from 'react-dom'
+import App from './App'
 
-export default class App extends Component{
-  render(){
-    return(
-      <div className="app">
-        <Switch>
-          <Route path="/login" component={Login}/>
-          <Route path="/admin" component={Admin}/>
-        </Switch>
-      </div>
-    )
-   }
-}
+ReactDOM.render(<App/>,document.getElementById('root'))
