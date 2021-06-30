@@ -1,18 +1,53 @@
 import React,{Component} from 'react'
+import { Form, Input, Button,message} from 'antd';
+import {connect} from 'react-redux'
+import {createSaveUserInfoAction} from '../../redux/action_creators/login_action'
+import {reqLogin} from '../../api/indux'
 import './css/login.less'
 import logo from './imges/logo.png'
-import { Form, Input, Button} from 'antd';
 import { RocketOutlined, LockOutlined } from '@ant-design/icons';
+import { Redirect } from 'react-router-dom';
 
-export default class Login extends Component{
 
-  onFinish = (values) => {
-    console.log('Received values of form: ', values);
-    alert('up');
-  };
+
+class Login extends Component{
   onFinishFailed = (errorInfo) => {
-    console.log('Failed:', errorInfo);
+    console.log('表单输入有误，请检查！', errorInfo);
   };
+
+  //点击登录按钮的回调
+  onFinish = (async(values)=>{
+    // event.preventDefault();//阻止默认事件--禁止form表单提交---通过ajax发送
+    // this.props.form.validateFields((values) => {
+      // console.log('向服务器发送登录请求')
+      // if(!err){
+        console.log('向服务器发送登录请求')
+        const{username,password}=values
+        /*
+        reqLogin(username,password)
+        .then((result)=>{
+          console.log(result);
+        })
+        .catch((reason)=>{
+          console.log(reason);
+        })
+        */
+       let result = await reqLogin(username,password)
+       console.log(result)
+       const {status,msg,data}=result.data
+       if (status === 0){
+        console.log(data);
+        //服务器返回的user和toooken交给redux
+        this.props.saveUserInfo(data);
+        //跳转admin
+        this.props.history.replace('/admin')
+       }
+       else message.warning(msg,1)
+      });
+
+
+
+//密码的验证器---每当在密码输入框输入东西后，都会调用此函数去验证输入是否合法。自定义校验，即：自己写判断
   pwdValidator=(rule, value)=>{
     //输入函数体
     if (!value){
@@ -26,17 +61,20 @@ export default class Login extends Component{
   }else{
     return Promise.resolve();
   }
-};
+}
   render(){
+    const{isLogin}=this.props;
+    if(isLogin) return <Redirect to ="/admin"/>
     return(
       <div className="login">
-          <header>
+          <header>``
               <img src={logo} alt="logo" />
-              {/* <h1></h1> */}
+              <h1>{this.props.test}</h1>
           </header>
           <section>
             <h1>login</h1>
             <Form
+              // onSubmit={this.handleSubmit}
               name="normal_login"
               className="login-form"
               initialValues={{
@@ -46,13 +84,6 @@ export default class Login extends Component{
               onFinishFailed={this.onFinishFailed}
              >
               <Form.Item
-              /*
-              用户名/密码的的合法性要求
-                1). 必须输入
-                2). 必须大于等于4位
-                3). 必须小于等于12位
-                4). 必须是英文、数字或下划线组成
-              */
               name="username"
               rules={[
                 //声明式
@@ -78,7 +109,6 @@ export default class Login extends Component{
                   type="password"
                   placeholder="Password"
                 />
-
               </Form.Item>
               <Form.Item>
                 <Button type="primary" htmlType="submit" className="login-form-button">
@@ -86,10 +116,15 @@ export default class Login extends Component{
                 </Button>
               </Form.Item>
             </Form>
-   
           </section>
       </div>
     )
-   }
+}
+}
 
+export default connect(
+  state => ({userInfo:state.userInfo}),
+  {
+    saveUserInfo:createSaveUserInfoAction,
   }
+)(Login)

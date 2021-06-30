@@ -1,4 +1,4 @@
-const CracoLessPlugin = require('craco-less');
+const {CracoLessPlugin,addDecoratorsLegacy} = require('craco-less');
 
 module.exports = {
   plugins: [
